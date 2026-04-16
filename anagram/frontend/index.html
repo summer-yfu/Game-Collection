@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="anagram-api-base" content="http://localhost:8080" />
+  <title>Anagram Solver</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="app-card">
+      <!-- <p class="eyebrow">
+        <a class="back-link" href="../../index.html">Arcane Arcade</a>
+        <span class="eyebrow__sep" aria-hidden="true">/</span>
+        Anagram
+      </p> -->
+      <h1 class="title">Anagram Solver</h1>
+      <p class="subtitle">
+        Enter a word or phrase. Mr.goose calls the Python API, which searches the full
+        dictionary for similar words or phrases.
+      </p>
+
+      <div class="mode-switch">
+        <button id="modeToggle" class="mode-btn" type="button">OSRS Mode</button>
+      </div>
+
+      <div class="input-group">
+        <label for="anagramInput" class="label">Word or phrase</label>
+        <input
+          id="anagramInput"
+          class="text-input"
+          type="text"
+          placeholder="Try: listen"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="controls">
+        <button id="generateButton" class="generate-button" type="button">
+          Generate Answers
+        </button>
+      </div>
+
+      <div class="run-track" aria-hidden="true">
+        <div class="run-track__duck"></div>
+        <div class="run-track__bar">
+          <div class="run-track__fill"></div>
+        </div>
+      </div>
+
+      <section class="result-panel" aria-live="polite">
+        <div class="result-header">
+          <h2 class="result-title">Results</h2>
+          <p id="resultHint" class="result-hint">Ready for magic.</p>
+        </div>
+
+        <div class="result-columns">
+          <div class="result-box">
+            <h3 class="box-title">Word Matches</h3>
+            <ul id="wordResults" class="result-list"></ul>
+          </div>
+
+          <div class="result-box">
+            <h3 class="box-title">Phrase Matches</h3>
+            <ul id="phraseResults" class="result-list"></ul>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,563 @@
+:root {
+  --void: #03030a;
+  --plum: #140c2b;
+  --gold: #d7b35d;
+  --gold-rgb: 215, 179, 93;
+  --silver: #ddd7f0;
+  --silver-dim: #978faa;
+  --mx: 50%;
+  --my: 42%;
+
+  --white: 255, 255, 255;
+  --ink: 5, 3, 18;
+  --title-ghost: #f6efff;
+  --label-dim: 189, 180, 210;
+
+  --accent: 98, 70, 204;
+  --deep-violet: 40, 20, 90;
+  --edge: 63, 32, 148;
+  --neb-blue: 105, 92, 255;
+  --neb-blue2: 82, 164, 255;
+  --neb-pink: 255, 130, 210;
+  --neb-pink2: 160, 120, 255;
+  --fog: 112, 96, 255;
+
+  --pink-glow: 255, 120, 190;
+  --violet: 114, 103, 255;
+  --soft-blue: 88, 124, 255;
+  --glow: 255, 134, 220;
+  --rim-light: 255, 225, 245;
+  --sparkle: 197, 171, 255;
+
+  --portal-core: 160, 118, 255;
+  --portal-mist: 255, 218, 252;
+  --portal-deep: 62, 40, 158;
+
+  /* portal timing — lobby.js reads these */
+  --portal-delay-open: 600ms;
+  --portal-delay-fade: 1400ms;
+  --portal-delay-nav: 2200ms;
+
+  --ease-out: cubic-bezier(0.2, 0.85, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.35, 0.64, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--silver);
+  background-color: var(--void);
+  background-image:
+    radial-gradient(ellipse 120% 90% at var(--mx) var(--my), rgba(var(--accent), 0.22) 0%, transparent 52%),
+    radial-gradient(ellipse 80% 55% at 12% 90%, rgba(var(--deep-violet), 0.24) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 90% 8%, rgba(var(--edge), 0.16) 0%, transparent 40%),
+    linear-gradient(170deg, #030309 0%, #0b0819 40%, #150d2d 100%);
+  overflow-x: hidden;
+}
+
+body.portal-open,
+body.portal-fade { overflow: hidden; }
+
+/* ---------- background layers ---------- */
+
+.stars, .nebula, .mist, .grain, .vignette, .portal-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stars {
+  z-index: 0;
+  opacity: 0.58;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 30%, #f1e9ff, transparent),
+    radial-gradient(1px 1px at 40% 80%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 12%, #ffe2a3, transparent),
+    radial-gradient(1px 1px at 22% 55%, #fff, transparent),
+    radial-gradient(1px 1px at 55% 40%, #ddd6ff, transparent),
+    radial-gradient(1px 1px at 85% 75%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 63% 19%, #fff, transparent);
+  animation: drift 18s linear infinite;
+}
+
+.nebula {
+  z-index: 1;
+  mix-blend-mode: screen;
+  filter: blur(26px);
+  opacity: 0.35;
+}
+.nebula--a {
+  background:
+    radial-gradient(circle at 24% 24%, rgba(var(--neb-blue), 0.34) 0%, transparent 26%),
+    radial-gradient(circle at 68% 62%, rgba(var(--neb-blue2), 0.2) 0%, transparent 22%);
+  animation: nebA 16s ease-in-out infinite alternate;
+}
+.nebula--b {
+  background:
+    radial-gradient(circle at 76% 20%, rgba(var(--neb-pink), 0.18) 0%, transparent 18%),
+    radial-gradient(circle at 34% 80%, rgba(var(--neb-pink2), 0.24) 0%, transparent 20%);
+  animation: nebB 20s ease-in-out infinite alternate;
+}
+
+.mist {
+  z-index: 2;
+  opacity: 0.18;
+  background: radial-gradient(ellipse 120% 80% at 50% 100%, rgba(var(--fog), 0.26) 0%, transparent 56%);
+  mix-blend-mode: screen;
+}
+
+.grain {
+  z-index: 3;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette {
+  z-index: 4;
+  background: radial-gradient(ellipse 72% 62% at 50% 45%, transparent 22%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+/* ---------- portal flash ---------- */
+
+.portal-flash {
+  z-index: 50;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 48%,
+      rgba(var(--white), 0.99) 0%,
+      rgba(var(--portal-mist), 0.88) 5%,
+      rgba(var(--portal-core), 0.58) 12%,
+      rgba(var(--portal-deep), 0.36) 22%,
+      transparent 60%),
+    radial-gradient(ellipse 88% 72% at 50% 50%,
+      rgba(var(--portal-core), 0.32) 0%, transparent 48%);
+  transform: scale(0.12);
+  filter: blur(10px);
+  mix-blend-mode: screen;
+}
+
+/* ---------- sanctum ---------- */
+
+.sanctum {
+  position: relative;
+  z-index: 5;
+  min-height: 100vh;
+  padding: clamp(1.8rem, 4vw, 3.5rem) clamp(1rem, 3vw, 2.6rem) 2.6rem;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.sanctum__header {
+  text-align: center;
+  margin-bottom: clamp(2.3rem, 6vw, 4rem);
+  max-width: 38rem;
+  position: relative;
+}
+.sanctum__header::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 0.7rem);
+  width: 200px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.82), transparent);
+  box-shadow: 0 0 18px rgba(var(--gold-rgb), 0.4);
+}
+
+.sanctum__sigil {
+  margin: 0 0 0.72rem;
+  font-family: "Cinzel", serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.9;
+}
+
+.sanctum__title {
+  margin: 0;
+  font-family: "Cinzel", serif;
+  font-size: clamp(2.45rem, 7vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.06;
+  color: var(--title-ghost);
+  text-shadow:
+    0 0 14px rgba(255, 244, 211, 0.18),
+    0 0 36px rgba(156, 116, 255, 0.18),
+    0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.sanctum__lede {
+  margin: 1rem 0 0;
+  font-size: 1.14rem;
+  line-height: 1.66;
+  color: rgb(var(--label-dim));
+}
+
+.sanctum__footer {
+  margin: auto 0 0;
+  padding-top: 2.6rem;
+  font-family: "Cinzel", serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(216, 210, 236, 0.35);
+}
+
+/* ---------- crystal grid ---------- */
+
+.crystal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 2rem);
+  width: 100%;
+  max-width: 580px;
+}
+
+@media (min-width: 740px) {
+  .crystal-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1020px;
+    gap: 2rem 1.4rem;
+  }
+}
+
+.crystal-slot {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 0.55rem;
+  animation: float 7s ease-in-out infinite;
+  transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+}
+.crystal-slot:nth-child(2) { animation-delay: -1s; }
+.crystal-slot:nth-child(3) { animation-delay: -2s; }
+.crystal-slot:nth-child(4) { animation-delay: -3s; }
+.crystal-slot:nth-child(5) { animation-delay: -4s; }
+.crystal-slot:nth-child(6) { animation-delay: -5s; }
+.crystal-slot:nth-child(7) { animation-delay: -6s; }
+.crystal-slot:nth-child(8) { animation-delay: -7s; }
+
+/* ---------- crystal orb ---------- */
+
+.crystal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: clamp(144px, 28vw, 178px);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.44s var(--ease-bounce), filter 0.36s ease;
+  isolation: isolate;
+}
+.crystal:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 8px;
+  border-radius: 14px;
+}
+
+.crystal__halo {
+  position: absolute;
+  top: -2px;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  z-index: 0;
+  opacity: 0.46;
+  filter: blur(18px);
+  background: radial-gradient(circle,
+    rgba(var(--white), 0.26) 0%, rgba(var(--pink-glow), 0.2) 22%,
+    rgba(var(--violet), 0.26) 44%, transparent 72%);
+  animation: pulse 4.9s ease-in-out infinite;
+}
+
+.crystal__sparkles {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 142px;
+  height: 142px;
+  transform: translateX(-50%);
+  z-index: 0;
+  opacity: 0.86;
+}
+.crystal__sparkles::before,
+.crystal__sparkles::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20% 18%, rgba(var(--white), 0.96), transparent),
+    radial-gradient(1.8px 1.8px at 78% 24%, rgba(var(--sparkle), 0.9), transparent),
+    radial-gradient(2px 2px at 68% 70%, rgba(var(--sparkle), 0.92), transparent),
+    radial-gradient(1.6px 1.6px at 30% 78%, rgba(var(--white), 0.9), transparent);
+  animation: orbit 4.5s linear infinite;
+}
+.crystal__sparkles::after {
+  transform: rotate(42deg) scale(1.08);
+  opacity: 0.65;
+  animation-duration: 6s;
+}
+
+.crystal__ball {
+  position: relative;
+  width: clamp(122px, 24vw, 154px);
+  height: clamp(122px, 24vw, 154px);
+  border-radius: 50%;
+  flex-shrink: 0;
+  z-index: 1;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(var(--white), 0.14),
+    0 0 14px rgba(var(--white), 0.08),
+    0 0 34px rgba(var(--pink-glow), 0.22),
+    0 0 62px rgba(var(--violet), 0.22),
+    0 22px 42px rgba(0, 0, 0, 0.52),
+    inset 0 -26px 44px rgba(var(--ink), 0.68),
+    inset 0 18px 34px rgba(var(--white), 0.22);
+}
+.crystal__ball::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 5;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(var(--white), 0.95) 0%, rgba(var(--portal-mist), 0.38) 6%, transparent 15%),
+    radial-gradient(ellipse 70% 55% at 30% 24%, rgba(var(--white), 0.42) 0%, transparent 20%),
+    radial-gradient(circle at 68% 72%, rgba(var(--pink-glow), 0.12) 0%, transparent 22%);
+  pointer-events: none;
+  animation: orbPulse 4.2s ease-in-out infinite;
+}
+.crystal__ball::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--rim-light), 0.24);
+  box-shadow: 0 0 16px rgba(var(--glow), 0.2), 0 0 28px rgba(var(--violet), 0.14);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.crystal__fill, .crystal__swirl {
+  position: absolute;
+  border-radius: 50%;
+}
+.crystal__fill { inset: 0; }
+
+.crystal--dawn .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 52%, rgba(255,255,255,0.96) 0%, rgba(255,220,255,0.72) 8%, rgba(150,180,255,0.38) 16%, transparent 30%),
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,0.5) 0%, transparent 18%),
+    radial-gradient(circle at 72% 72%, rgba(255,80,160,0.2) 0%, transparent 30%),
+    radial-gradient(circle at 48% 48%, rgba(66,92,255,0.55) 0%, rgba(34,10,100,0.72) 42%, rgba(10,5,35,0.95) 78%);
+}
+.crystal--ember .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.98) 0%, rgba(255,210,245,0.75) 8%, rgba(255,132,180,0.3) 15%, transparent 28%),
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,0.44) 0%, transparent 18%),
+    radial-gradient(circle at 68% 68%, rgba(255,90,170,0.2) 0%, transparent 28%),
+    radial-gradient(circle at 50% 52%, rgba(126,92,255,0.44) 0%, rgba(60,22,144,0.78) 45%, rgba(12,6,36,0.96) 80%);
+}
+.crystal--moss .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255,255,255,0.95) 0%, rgba(214,232,255,0.7) 8%, rgba(140,255,235,0.25) 14%, transparent 26%),
+    radial-gradient(circle at 26% 22%, rgba(255,255,255,0.42) 0%, transparent 18%),
+    radial-gradient(circle at 70% 72%, rgba(90,255,220,0.16) 0%, transparent 30%),
+    radial-gradient(circle at 50% 52%, rgba(82,106,255,0.42) 0%, rgba(18,88,86,0.58) 42%, rgba(7,12,30,0.96) 82%);
+}
+.crystal--mist .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255,255,255,0.96) 0%, rgba(220,244,255,0.62) 8%, transparent 22%),
+    radial-gradient(circle at 48% 52%, rgba(90,190,255,0.38) 0%, rgba(24,76,122,0.72) 42%, rgba(6,12,24,0.96) 82%);
+}
+.crystal--iris .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255,255,255,0.96) 0%, rgba(227,220,255,0.62) 8%, transparent 22%),
+    radial-gradient(circle at 48% 52%, rgba(122,106,255,0.52) 0%, rgba(49,30,128,0.78) 42%, rgba(8,5,22,0.96) 82%);
+}
+.crystal--void .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.82) 0%, rgba(210,205,255,0.42) 8%, transparent 22%),
+    radial-gradient(circle at 48% 52%, rgba(116,94,255,0.48) 0%, rgba(37,24,90,0.78) 42%, rgba(8,5,20,0.96) 82%);
+}
+.crystal--coral .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.96) 0%, rgba(255,225,200,0.7) 8%, rgba(255,160,100,0.3) 15%, transparent 28%),
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,0.44) 0%, transparent 18%),
+    radial-gradient(circle at 68% 68%, rgba(255,120,60,0.2) 0%, transparent 28%),
+    radial-gradient(circle at 50% 52%, rgba(180,80,40,0.5) 0%, rgba(80,30,15,0.78) 45%, rgba(16,6,4,0.96) 80%);
+}
+.crystal--frost .crystal__fill {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255,255,255,0.97) 0%, rgba(220,240,255,0.7) 8%, rgba(160,220,255,0.28) 15%, transparent 28%),
+    radial-gradient(circle at 26% 22%, rgba(255,255,255,0.46) 0%, transparent 18%),
+    radial-gradient(circle at 70% 70%, rgba(100,200,255,0.16) 0%, transparent 28%),
+    radial-gradient(circle at 50% 52%, rgba(50,120,200,0.48) 0%, rgba(16,50,100,0.76) 45%, rgba(4,10,26,0.96) 80%);
+}
+.crystal__swirl {
+  inset: -8%;
+  opacity: 0.82;
+  background:
+    conic-gradient(from 0deg,
+      transparent 0deg, rgba(var(--portal-mist), 0.18) 35deg,
+      rgba(var(--soft-blue), 0.24) 90deg, transparent 145deg,
+      rgba(var(--pink-glow), 0.18) 220deg, rgba(var(--soft-blue), 0.2) 290deg,
+      transparent 360deg),
+    radial-gradient(circle, rgba(var(--white), 0.2) 0%, transparent 42%);
+  filter: blur(10px);
+  mix-blend-mode: screen;
+  animation: spin 8s linear infinite;
+}
+
+.crystal__rune {
+  position: absolute;
+  top: 92px;
+  width: 126px;
+  height: 126px;
+  z-index: 0;
+  border-radius: 50%;
+  opacity: 0.58;
+  background:
+    radial-gradient(circle, transparent 47%, rgba(var(--gold-rgb), 0.48) 48%, transparent 50%),
+    conic-gradient(from 0deg,
+      rgba(var(--gold-rgb), 0) 0deg, rgba(var(--gold-rgb), 0.8) 14deg, transparent 28deg,
+      transparent 60deg, rgba(var(--gold-rgb), 0.78) 72deg, transparent 84deg,
+      transparent 130deg, rgba(var(--gold-rgb), 0.84) 144deg, transparent 156deg,
+      transparent 220deg, rgba(var(--gold-rgb), 0.88) 236deg, transparent 250deg,
+      transparent 300deg, rgba(var(--gold-rgb), 0.86) 316deg, transparent 330deg);
+  animation: spin 15s linear infinite;
+}
+
+.crystal__pedestal {
+  width: 58%;
+  height: 12px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #322a46, #120c1c);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.crystal__label {
+  position: relative;
+  z-index: 3;
+  margin-top: 0.62rem;
+  font-family: "Cinzel", serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #f2ebff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
+}
+.crystal__path {
+  position: relative;
+  z-index: 3;
+  margin-top: 0.18rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  color: var(--silver-dim);
+  opacity: 0.88;
+  text-align: center;
+}
+
+/* ---------- hover / active ---------- */
+
+.crystal:hover {
+  transform: translateY(-8px) scale(1.06);
+  filter: brightness(1.14);
+}
+.crystal:hover .crystal__ball {
+  box-shadow:
+    0 0 0 1px rgba(var(--white), 0.2),
+    0 0 20px rgba(var(--white), 0.1),
+    0 0 38px rgba(var(--glow), 0.26),
+    0 0 72px rgba(var(--violet), 0.28),
+    0 22px 42px rgba(0, 0, 0, 0.54),
+    inset 0 -24px 42px rgba(var(--ink), 0.56),
+    inset 0 18px 32px rgba(var(--white), 0.26);
+}
+.crystal:hover .crystal__halo {
+  opacity: 0.74;
+  transform: scale(1.12);
+}
+.crystal:hover .crystal__rune {
+  opacity: 0.86;
+  filter: drop-shadow(0 0 10px rgba(var(--gold-rgb), 0.32));
+}
+.crystal:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* ---------- portal transition (driven by anime.js in lobby.js) ---------- */
+
+/* ---------- keyframes ---------- */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(0.96); opacity: 0.4; }
+  50% { transform: scale(1.08); opacity: 0.66; }
+}
+@keyframes orbit {
+  from { transform: rotate(0deg); opacity: 0.76; }
+  50% { opacity: 1; }
+  to { transform: rotate(360deg); opacity: 0.76; }
+}
+@keyframes orbPulse {
+  0%, 100% { transform: scale(0.98); opacity: 0.82; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes nebA {
+  from { transform: translate3d(-2%, 0, 0) scale(1); }
+  to { transform: translate3d(2%, -2%, 0) scale(1.08); }
+}
+@keyframes nebB {
+  from { transform: translate3d(1%, 1%, 0) scale(1); }
+  to { transform: translate3d(-2%, -1%, 0) scale(1.1); }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .stars, .nebula, .crystal-slot, .crystal__halo,
+  .crystal__sparkles::before, .crystal__sparkles::after,
+  .crystal__swirl, .crystal__rune, .crystal__ball::before {
+    animation: none !important;
+  }
+  .crystal, .sanctum, .portal-flash {
+    transition: none !important;
+  }
+  body {
+    background-image:
+      radial-gradient(ellipse 100% 80% at 50% 35%, #1f1538 0%, transparent 55%),
+      linear-gradient(168deg, var(--void) 0%, var(--plum) 100%);
+  }
+}
